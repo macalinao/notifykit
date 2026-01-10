@@ -1,0 +1,163 @@
+# NotifyKit
+
+A macOS notification CLI with Claude Code hook support. Built with Rust using the native `UserNotifications` framework.
+
+## Installation
+
+### Homebrew (Recommended)
+
+```bash
+brew install macalinao/tap/notifykit
+```
+
+### Quick Install (curl)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/macalinao/notifykit/master/scripts/install-remote.sh | bash
+```
+
+### Manual Install (from releases)
+
+1. Download the latest release for your architecture from [GitHub Releases](https://github.com/macalinao/notifykit/releases):
+   - Apple Silicon: `NotifyKit-aarch64-apple-darwin.tar.gz`
+   - Intel: `NotifyKit-x86_64-apple-darwin.tar.gz`
+
+2. Extract and install:
+```bash
+# Extract
+tar -xzf NotifyKit-*.tar.gz
+
+# Move to Applications
+mv NotifyKit.app ~/Applications/
+
+# Create symlink (needs sudo)
+sudo ln -sf ~/Applications/NotifyKit.app/Contents/MacOS/notifykit /usr/local/bin/notifykit
+
+# Verify
+notifykit --version
+```
+
+### From Source
+
+```bash
+git clone https://github.com/macalinao/notifykit
+cd notifykit
+./scripts/install.sh --release
+```
+
+### First Run
+
+On first run, macOS will ask for notification permissions. If notifications don't appear, enable them manually:
+
+**System Settings → Notifications → NotifyKit**
+
+## Usage
+
+### Send a Notification
+
+```bash
+# Basic notification
+notifykit send -t "Hello" -b "World"
+
+# With sound
+notifykit send -t "Alert" -b "Something happened" -s default
+
+# With subtitle
+notifykit send -t "Title" --subtitle "Subtitle" -b "Body" -s default
+```
+
+### Options
+
+```
+notifykit send [OPTIONS] --title <TITLE>
+
+Options:
+  -t, --title <TITLE>        Notification title (required)
+  -b, --body <BODY>          Notification body
+      --subtitle <SUBTITLE>  Notification subtitle
+  -s, --sound <SOUND>        Sound: "default" or custom sound name
+  -h, --help                 Print help
+```
+
+## Claude Code Hook
+
+NotifyKit can be used as a [Claude Code hook](https://docs.anthropic.com/en/docs/claude-code/hooks) to get notifications when Claude completes tasks.
+
+### Setup
+
+Add to your Claude Code settings (`~/.claude/settings.json`):
+
+```json
+{
+  "hooks": {
+    "stop": [
+      {
+        "type": "command",
+        "command": "notifykit cchook"
+      }
+    ]
+  }
+}
+```
+
+Now you'll get a notification (with sound) whenever Claude finishes a task.
+
+### Hook Events
+
+The `cchook` command reads Claude Code hook JSON from stdin and sends appropriate notifications:
+
+- `stop` → "Task Complete"
+- `notification` → "Notification"
+- Other events are displayed as-is
+
+## Development
+
+### Prerequisites
+
+- Rust (via rustup)
+- macOS (required for UserNotifications framework)
+
+### Build
+
+```bash
+# Development build
+cargo build
+
+# Create .app bundle for testing
+./scripts/bundle.sh
+
+# Install locally
+./scripts/install.sh
+```
+
+### Project Structure
+
+```
+notifykit/
+├── crates/
+│   └── notifykit/          # Main CLI crate
+│       └── src/
+│           ├── main.rs
+│           ├── cli.rs      # CLI argument definitions
+│           ├── notification.rs  # macOS notification API
+│           └── commands/
+│               ├── send.rs     # send command
+│               └── cchook.rs   # Claude Code hook
+├── resources/
+│   ├── Info.plist          # macOS app bundle metadata
+│   └── NotifyKit.icns      # App icon
+├── scripts/
+│   ├── bundle.sh           # Create .app bundle
+│   ├── install.sh          # Local install
+│   └── install-remote.sh   # Remote install script
+├── devenv.nix              # Nix development environment
+└── Cargo.toml              # Workspace configuration
+```
+
+### Why an App Bundle?
+
+The modern `UserNotifications` framework requires the calling process to be part of a signed app bundle. NotifyKit is packaged as `NotifyKit.app` with the CLI binary inside. The install scripts create a symlink so you can use `notifykit` directly from your terminal.
+
+## License
+
+Apache-2.0
