@@ -31,9 +31,7 @@ pub fn run() -> Result<()> {
     let body = format!("Session: {}...", session_prefix);
 
     // Use default sound for Claude Code notifications
-    send_notification(&title, None, Some(&body), NotificationSound::Default)?;
-
-    Ok(())
+    send_notification(&title, None, Some(&body), NotificationSound::Default)
 }
 
 /// Format hook event name for display

@@ -1,9 +1,11 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "notifykit")]
-#[command(about = "macOS notification CLI with Claude Code hook support")]
-#[command(version)]
+#[command(
+    name = "notifykit",
+    about = "macOS notification CLI with Claude Code hook support",
+    version
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,

@@ -6,10 +6,6 @@ license.workspace = true
 description = "macOS notification CLI with Claude Code hook support"
 repository = "https://github.com/macalinao/notifykit"
 
-[[bin]]
-name = "notifykit"
-path = "src/main.rs"
-
 [dependencies]
 # CLI framework
 clap = { version = "4", features = ["derive"] }

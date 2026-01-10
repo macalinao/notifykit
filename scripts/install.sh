@@ -30,16 +30,9 @@ BIN_LINK="$BIN_DIR/notifykit"
 echo ""
 echo "Installing NotifyKit..."
 
-# Create ~/Applications if it doesn't exist
+# Create ~/Applications and install app bundle (remove old installation if present)
 mkdir -p "$INSTALL_DIR"
-
-# Remove old installation if present
-if [ -d "$DEST_APP" ]; then
-    echo "Removing old installation..."
-    rm -rf "$DEST_APP"
-fi
-
-# Copy new app bundle
+rm -rf "$DEST_APP"
 echo "Copying $APP_NAME to $INSTALL_DIR..."
 cp -R "$SOURCE_APP" "$DEST_APP"
 

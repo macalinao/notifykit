@@ -9,6 +9,16 @@ use objc2_user_notifications::{
 use std::sync::mpsc;
 use std::time::Duration;
 
+/// Converts an NSError pointer to a Result, using the provided context for the error message.
+fn check_ns_error(error: *mut NSError, context: &str) -> Result<()> {
+    if error.is_null() {
+        Ok(())
+    } else {
+        let err = unsafe { &*error };
+        Err(anyhow!("{}: {}", context, err.localizedDescription()))
+    }
+}
+
 /// Sound options for notifications
 pub enum NotificationSound {
     /// No sound
@@ -35,17 +45,13 @@ pub fn send_notification(
     let (auth_tx, auth_rx) = mpsc::channel();
     let auth_handler: RcBlock<dyn Fn(Bool, *mut NSError)> =
         RcBlock::new(move |granted: Bool, error: *mut NSError| {
-            let result = if !error.is_null() {
-                let err = unsafe { &*error };
-                Err(anyhow!(
-                    "Authorization error: {}",
-                    err.localizedDescription()
-                ))
-            } else if !granted.as_bool() {
-                Err(anyhow!("Notification permission denied"))
-            } else {
-                Ok(())
-            };
+            let result = check_ns_error(error, "Authorization error").and_then(|()| {
+                if granted.as_bool() {
+                    Ok(())
+                } else {
+                    Err(anyhow!("Notification permission denied"))
+                }
+            });
             let _ = auth_tx.send(result);
         });
 
@@ -96,16 +102,7 @@ pub fn send_notification(
     // Add notification request synchronously using a channel
     let (add_tx, add_rx) = mpsc::channel();
     let add_handler: RcBlock<dyn Fn(*mut NSError)> = RcBlock::new(move |error: *mut NSError| {
-        let result = if !error.is_null() {
-            let err = unsafe { &*error };
-            Err(anyhow!(
-                "Failed to add notification: {}",
-                err.localizedDescription()
-            ))
-        } else {
-            Ok(())
-        };
-        let _ = add_tx.send(result);
+        let _ = add_tx.send(check_ns_error(error, "Failed to add notification"));
     });
 
     center.addNotificationRequest_withCompletionHandler(&request, Some(&add_handler));
