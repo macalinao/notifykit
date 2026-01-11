@@ -28,6 +28,6 @@ cask "notifykit" do
 
   zap trash: [
     "~/Library/Application Support/NotifyKit",
-    "~/Library/Preferences/com.macalinao.notifykit.plist",
+    "~/Library/Preferences/com.ianm.notifykit.plist",
   ]
 end

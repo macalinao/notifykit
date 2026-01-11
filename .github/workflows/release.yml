@@ -32,33 +32,17 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+      - name: Install cargo-bundle
+        run: cargo install cargo-bundle
 
-      - name: Create app bundle
-        run: |
-          APP_DIR="NotifyKit.app"
-          CONTENTS_DIR="$APP_DIR/Contents"
-          MACOS_DIR="$CONTENTS_DIR/MacOS"
-          RESOURCES_DIR="$CONTENTS_DIR/Resources"
-
-          mkdir -p "$MACOS_DIR"
-          mkdir -p "$RESOURCES_DIR"
-
-          # Copy binary
-          cp "target/${{ matrix.target }}/release/notifykit" "$MACOS_DIR/notifykit"
-
-          # Copy Info.plist
-          cp "resources/Info.plist" "$CONTENTS_DIR/Info.plist"
-
-          # Copy icon
-          cp "resources/NotifyKit.icns" "$RESOURCES_DIR/NotifyKit.icns"
+      - name: Build app bundle
+        run: cargo bundle --release --target ${{ matrix.target }} -p notifykit
 
       - name: Sign app bundle (ad-hoc)
-        run: codesign --sign - --force --deep NotifyKit.app
+        run: codesign --sign - --force --deep target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
 
       - name: Create archive
-        run: tar -czvf ${{ matrix.artifact_name }}.tar.gz NotifyKit.app
+        run: tar -czvf ${{ matrix.artifact_name }}.tar.gz -C target/${{ matrix.target }}/release/bundle/osx NotifyKit.app
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
@@ -121,7 +105,7 @@ jobs:
 
             zap trash: [
               "~/Library/Application Support/NotifyKit",
-              "~/Library/Preferences/com.macalinao.notifykit.plist",
+              "~/Library/Preferences/com.ianm.notifykit.plist",
             ]
           end
           EOF
