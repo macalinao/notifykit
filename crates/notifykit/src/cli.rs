@@ -24,7 +24,7 @@ pub enum Commands {
 #[derive(clap::Args)]
 pub struct CchookArgs {
     /// Play a sound with the notification (use "default" for system sound, or a custom sound name)
-    #[arg(short, long)]
+    #[arg(short, long, default_missing_value = "default", num_args = 0..=1)]
     pub sound: Option<String>,
 }
 
@@ -43,6 +43,6 @@ pub struct SendArgs {
     pub subtitle: Option<String>,
 
     /// Play a sound with the notification (use "default" for system sound, or a custom sound name)
-    #[arg(short, long)]
+    #[arg(short, long, default_missing_value = "default", num_args = 0..=1)]
     pub sound: Option<String>,
 }
