@@ -102,6 +102,57 @@ Add to your Claude Code settings (`~/.claude/settings.json`):
 
 Now you'll get a notification (with sound) whenever Claude finishes a task.
 
+### Custom Sound
+
+Use a custom notification sound:
+
+```json
+{
+  "hooks": {
+    "stop": [
+      {
+        "type": "command",
+        "command": "notifykit cchook --sound Glass"
+      }
+    ]
+  }
+}
+```
+
+To see all available sounds:
+
+```bash
+notifykit sounds
+```
+
+Available options:
+- `default` - System default notification sound
+- `none` - No sound
+- System sounds: `Basso`, `Blow`, `Bottle`, `Frog`, `Funk`, `Glass`, `Hero`, `Morse`, `Ping`, `Pop`, `Purr`, `Sosumi`, `Submarine`, `Tink`
+
+### Multiple Hook Events
+
+You can set up notifications for different Claude Code events:
+
+```json
+{
+  "hooks": {
+    "stop": [
+      {
+        "type": "command",
+        "command": "notifykit cchook --sound Glass"
+      }
+    ],
+    "notification": [
+      {
+        "type": "command",
+        "command": "notifykit cchook --sound Ping"
+      }
+    ]
+  }
+}
+```
+
 ### Hook Events
 
 The `cchook` command reads Claude Code hook JSON from stdin and sends appropriate notifications:
@@ -142,7 +193,8 @@ notifykit/
 │           ├── notification.rs  # macOS notification API
 │           └── commands/
 │               ├── send.rs     # send command
-│               └── cchook.rs   # Claude Code hook
+│               ├── cchook.rs   # Claude Code hook
+│               └── sounds.rs   # list available sounds
 ├── resources/
 │   ├── Info.plist          # macOS app bundle metadata
 │   └── NotifyKit.icns      # App icon

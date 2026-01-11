@@ -11,6 +11,7 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Send(args) => commands::send::run(args),
-        Commands::Cchook => commands::cchook::run(),
+        Commands::Cchook(args) => commands::cchook::run(args),
+        Commands::Sounds => commands::sounds::run(),
     }
 }

@@ -1,3 +1,4 @@
+use crate::cli::CchookArgs;
 use crate::notification::{NotificationSound, send_notification};
 use anyhow::Result;
 use serde::Deserialize;
@@ -13,7 +14,7 @@ struct HookInput {
     stop_hook_active: bool,
 }
 
-pub fn run() -> Result<()> {
+pub fn run(args: CchookArgs) -> Result<()> {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
 
@@ -30,8 +31,14 @@ pub fn run() -> Result<()> {
     let session_prefix: String = hook.session_id.chars().take(8).collect();
     let body = format!("Session: {}...", session_prefix);
 
-    // Use default sound for Claude Code notifications
-    send_notification(&title, None, Some(&body), NotificationSound::Default)
+    // Determine sound based on args
+    let sound = match args.sound.as_deref() {
+        None | Some("default") => NotificationSound::Default,
+        Some("none") => NotificationSound::None,
+        Some(name) => NotificationSound::Custom(name.to_string()),
+    };
+
+    send_notification(&title, None, Some(&body), sound)
 }
 
 /// Format hook event name for display
