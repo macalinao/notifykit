@@ -56,27 +56,20 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
   build:
-    name: Build ${{ matrix.target }}
+    name: Build aarch64-apple-darwin
     needs: release-plz-release
     if: needs.release-plz-release.outputs.releases_created == 'true'
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - target: aarch64-apple-darwin
-            artifact_name: NotifyKit-aarch64-apple-darwin
-            runner: macos-latest
-          - target: x86_64-apple-darwin
-            artifact_name: NotifyKit-x86_64-apple-darwin
-            runner: macos-13
-
+    runs-on: macos-latest
+    env:
+      TARGET: aarch64-apple-darwin
+      ARTIFACT_NAME: NotifyKit-aarch64-apple-darwin
     steps:
       - uses: actions/checkout@v6
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ env.TARGET }}
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -85,13 +78,13 @@ jobs:
         run: cargo install cargo-bundle
 
       - name: Build app bundle
-        run: cargo bundle --release --target ${{ matrix.target }} -p notifykit
+        run: cargo bundle --release --target ${{ env.TARGET }} -p notifykit
 
       - name: Sign app bundle (ad-hoc)
-        run: codesign --sign - --force --deep target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
+        run: codesign --sign - --force --deep target/${{ env.TARGET }}/release/bundle/osx/NotifyKit.app
 
       - name: Create archive
-        run: tar -czvf ${{ matrix.artifact_name }}.tar.gz -C target/${{ matrix.target }}/release/bundle/osx NotifyKit.app
+        run: tar -czvf ${{ env.ARTIFACT_NAME }}.tar.gz -C target/${{ env.TARGET }}/release/bundle/osx NotifyKit.app
 
       - name: Get version from releases
         id: version
@@ -103,100 +96,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          files: ${{ matrix.artifact_name }}.tar.gz
-
-  update-homebrew:
-    name: Update Homebrew Tap
-    needs: [release-plz-release, build]
-    if: needs.release-plz-release.outputs.releases_created == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Get version from releases
-        id: version
-        run: |
-          VERSION=$(echo '${{ needs.release-plz-release.outputs.releases }}' | jq -r '.[0].version')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Download release artifacts
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          curl -fsSL "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/NotifyKit-aarch64-apple-darwin.tar.gz" -o arm64.tar.gz
-          curl -fsSL "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/NotifyKit-x86_64-apple-darwin.tar.gz" -o x86_64.tar.gz
-
-      - name: Calculate checksums
-        id: checksums
-        run: |
-          echo "arm64_sha=$(sha256sum arm64.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
-          echo "x86_64_sha=$(sha256sum x86_64.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
-
-      - name: Update cask formula
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          ARM64_SHA="${{ steps.checksums.outputs.arm64_sha }}"
-          X86_64_SHA="${{ steps.checksums.outputs.x86_64_sha }}"
-
-          cat > homebrew/Casks/notifykit.rb << CASKEOF
-          cask "notifykit" do
-            version "${VERSION}"
-
-            on_arm do
-              sha256 "${ARM64_SHA}"
-              url "https://github.com/macalinao/notifykit/releases/download/v#{version}/NotifyKit-aarch64-apple-darwin.tar.gz"
-            end
-
-            on_intel do
-              sha256 "${X86_64_SHA}"
-              url "https://github.com/macalinao/notifykit/releases/download/v#{version}/NotifyKit-x86_64-apple-darwin.tar.gz"
-            end
-
-            name "NotifyKit"
-            desc "macOS notification CLI with Claude Code hook support"
-            homepage "https://github.com/macalinao/notifykit"
-
-            app "NotifyKit.app"
-            binary "NotifyKit.app/Contents/MacOS/notifykit"
-
-            postflight do
-              set_permissions "#{appdir}/NotifyKit.app/Contents/MacOS/notifykit", "755"
-            end
-
-            zap trash: [
-              "~/Library/Application Support/NotifyKit",
-              "~/Library/Preferences/com.ianm.notifykit.plist",
-            ]
-          end
-          CASKEOF
-
-          # Strip the leading indentation from the heredoc
-          sed -i '' 's/^          //' homebrew/Casks/notifykit.rb
-
-          echo "Updated cask formula:"
-          cat homebrew/Casks/notifykit.rb
-
-      - name: Push to homebrew-tap
-        env:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-
-          # Clone homebrew-tap
-          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/macalinao/homebrew-tap.git" homebrew-tap-repo
-
-          # Copy updated cask
-          mkdir -p homebrew-tap-repo/Casks
-          cp homebrew/Casks/notifykit.rb homebrew-tap-repo/Casks/
-
-          # Commit and push
-          cd homebrew-tap-repo
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/notifykit.rb
-          # Only commit and push if there are changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update notifykit to ${VERSION}"
-            git push
-          fi
+          files: ${{ env.ARTIFACT_NAME }}.tar.gz
