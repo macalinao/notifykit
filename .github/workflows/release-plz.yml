@@ -13,7 +13,7 @@ jobs:
   release-plz-release:
     name: Release-plz release
     if: github.repository_owner == 'macalinao'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -32,7 +32,7 @@ jobs:
   release-plz-pr:
     name: Release-plz PR
     if: github.repository_owner == 'macalinao'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     concurrency:
       group: release-plz-${{ github.ref }}
       cancel-in-progress: false
