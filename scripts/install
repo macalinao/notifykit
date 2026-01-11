@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install notifykit locally
-# Usage: ./scripts/install.sh [--release]
+# Usage: ./scripts/install [--debug]
 #
 # This script:
 # 1. Builds the app bundle
@@ -12,9 +12,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-PROFILE="debug"
-if [ "$1" = "--release" ]; then
-    PROFILE="release"
+PROFILE="release"
+if [ "$1" = "--debug" ]; then
+    PROFILE="debug"
 fi
 
 # Build the bundle
@@ -53,3 +53,16 @@ echo "You can now use: notifykit send -t 'Title' -b 'Body' -s default"
 echo ""
 echo "Note: First run may require enabling notifications in:"
 echo "  System Settings → Notifications → NotifyKit"
+
+# Verify installation
+echo ""
+echo "Verifying installation..."
+if command -v notifykit &> /dev/null; then
+    echo ""
+    notifykit --version
+    echo ""
+    echo "Installation verified successfully!"
+else
+    echo "Warning: notifykit not found in PATH"
+    echo "You may need to restart your terminal or add /usr/local/bin to PATH"
+fi
