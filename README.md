@@ -175,10 +175,10 @@ The `cchook` command reads Claude Code hook JSON from stdin and sends appropriat
 cargo build
 
 # Create .app bundle for testing
-./scripts/bundle.sh
+cargo bundle -p notifykit
 
-# Install locally
-./scripts/install.sh
+# Install locally (release build, or --debug for debug)
+./scripts/install
 ```
 
 ### Project Structure
@@ -199,8 +199,7 @@ notifykit/
 │   ├── Info.plist          # macOS app bundle metadata
 │   └── NotifyKit.icns      # App icon
 ├── scripts/
-│   ├── bundle.sh           # Create .app bundle
-│   ├── install.sh          # Local install
+│   ├── install             # Local install (uses cargo-bundle)
 │   └── install-remote.sh   # Remote install script
 ├── devenv.nix              # Nix development environment
 └── Cargo.toml              # Workspace configuration

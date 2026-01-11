@@ -3,29 +3,50 @@
 # Usage: ./scripts/install [--debug]
 #
 # This script:
-# 1. Builds the app bundle
-# 2. Copies it to ~/Applications
-# 3. Creates a symlink in /usr/local/bin
+# 1. Builds the app bundle using cargo-bundle
+# 2. Signs the bundle (ad-hoc)
+# 3. Copies it to ~/Applications
+# 4. Creates a symlink in /usr/local/bin
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
+# Check for cargo bundle
+if ! cargo bundle --help &> /dev/null; then
+    echo "cargo-bundle is not installed."
+    read -p "Install cargo-bundle? [Y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
+        echo "Aborted. Install cargo-bundle manually with: cargo install cargo-bundle"
+        exit 1
+    fi
+    cargo install cargo-bundle
+fi
+
+CARGO_FLAGS="-p notifykit"
 PROFILE="release"
 if [ "$1" = "--debug" ]; then
     PROFILE="debug"
+else
+    CARGO_FLAGS="$CARGO_FLAGS --release"
 fi
 
 # Build the bundle
-"$SCRIPT_DIR/bundle.sh" "$PROFILE"
+cargo bundle $CARGO_FLAGS
 
 APP_NAME="NotifyKit.app"
-SOURCE_APP="$PROJECT_DIR/target/$PROFILE/$APP_NAME"
+SOURCE_APP="$PROJECT_DIR/target/$PROFILE/bundle/osx/$APP_NAME"
 INSTALL_DIR="$HOME/Applications"
 DEST_APP="$INSTALL_DIR/$APP_NAME"
 BIN_DIR="/usr/local/bin"
 BIN_LINK="$BIN_DIR/notifykit"
+
+# Sign the app bundle (ad-hoc)
+echo ""
+echo "Signing bundle..."
+codesign --sign - --force --deep "$SOURCE_APP"
 
 echo ""
 echo "Installing NotifyKit..."
