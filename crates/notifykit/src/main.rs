@@ -13,5 +13,6 @@ fn main() -> Result<()> {
         Commands::Send(args) => commands::send::run(args),
         Commands::Cchook(args) => commands::cchook::run(args),
         Commands::Sounds => commands::sounds::run(),
+        Commands::SendTestNotification => commands::test::run(),
     }
 }

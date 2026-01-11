@@ -19,6 +19,8 @@ pub enum Commands {
     Cchook(CchookArgs),
     /// List available notification sounds
     Sounds,
+    /// Send a test notification
+    SendTestNotification,
 }
 
 #[derive(clap::Args)]

@@ -137,37 +137,40 @@ jobs:
           ARM64_SHA="${{ steps.checksums.outputs.arm64_sha }}"
           X86_64_SHA="${{ steps.checksums.outputs.x86_64_sha }}"
 
-          cat > homebrew/Casks/notifykit.rb << EOF
-cask "notifykit" do
-  version "${VERSION}"
+          cat > homebrew/Casks/notifykit.rb << CASKEOF
+          cask "notifykit" do
+            version "${VERSION}"
 
-  on_arm do
-    sha256 "${ARM64_SHA}"
-    url "https://github.com/macalinao/notifykit/releases/download/v#{version}/NotifyKit-aarch64-apple-darwin.tar.gz"
-  end
+            on_arm do
+              sha256 "${ARM64_SHA}"
+              url "https://github.com/macalinao/notifykit/releases/download/v#{version}/NotifyKit-aarch64-apple-darwin.tar.gz"
+            end
 
-  on_intel do
-    sha256 "${X86_64_SHA}"
-    url "https://github.com/macalinao/notifykit/releases/download/v#{version}/NotifyKit-x86_64-apple-darwin.tar.gz"
-  end
+            on_intel do
+              sha256 "${X86_64_SHA}"
+              url "https://github.com/macalinao/notifykit/releases/download/v#{version}/NotifyKit-x86_64-apple-darwin.tar.gz"
+            end
 
-  name "NotifyKit"
-  desc "macOS notification CLI with Claude Code hook support"
-  homepage "https://github.com/macalinao/notifykit"
+            name "NotifyKit"
+            desc "macOS notification CLI with Claude Code hook support"
+            homepage "https://github.com/macalinao/notifykit"
 
-  app "NotifyKit.app"
-  binary "NotifyKit.app/Contents/MacOS/notifykit"
+            app "NotifyKit.app"
+            binary "NotifyKit.app/Contents/MacOS/notifykit"
 
-  postflight do
-    set_permissions "#{appdir}/NotifyKit.app/Contents/MacOS/notifykit", "755"
-  end
+            postflight do
+              set_permissions "#{appdir}/NotifyKit.app/Contents/MacOS/notifykit", "755"
+            end
 
-  zap trash: [
-    "~/Library/Application Support/NotifyKit",
-    "~/Library/Preferences/com.ianm.notifykit.plist",
-  ]
-end
-EOF
+            zap trash: [
+              "~/Library/Application Support/NotifyKit",
+              "~/Library/Preferences/com.ianm.notifykit.plist",
+            ]
+          end
+          CASKEOF
+
+          # Strip the leading indentation from the heredoc
+          sed -i '' 's/^          //' homebrew/Casks/notifykit.rb
 
           echo "Updated cask formula:"
           cat homebrew/Casks/notifykit.rb
