@@ -4,13 +4,7 @@ A macOS notification CLI with Claude Code hook support. Built with Rust using th
 
 ## Installation
 
-### Homebrew (Recommended)
-
-```bash
-brew install macalinao/tap/notifykit
-```
-
-### Quick Install (curl)
+### Quick Install (Recommended)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/macalinao/notifykit/master/scripts/install-remote.sh | bash
@@ -18,9 +12,8 @@ curl -fsSL https://raw.githubusercontent.com/macalinao/notifykit/master/scripts/
 
 ### Manual Install (from releases)
 
-1. Download the latest release for your architecture from [GitHub Releases](https://github.com/macalinao/notifykit/releases):
-   - Apple Silicon: `NotifyKit-aarch64-apple-darwin.tar.gz`
-   - Intel: `NotifyKit-x86_64-apple-darwin.tar.gz`
+1. Download the latest release from [GitHub Releases](https://github.com/macalinao/notifykit/releases):
+   - `NotifyKit-aarch64-apple-darwin.tar.gz` (Apple Silicon only)
 
 2. Extract and install:
 ```bash
