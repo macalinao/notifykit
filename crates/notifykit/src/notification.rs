@@ -34,6 +34,7 @@ pub enum NotificationSound {
 ///
 /// Controls how prominently the notification is displayed to the user.
 #[derive(Default, Clone, Copy, Debug)]
+#[allow(dead_code)]
 pub enum InterruptionLevel {
     /// Notification is added to the notification list without lighting up the screen.
     Passive,
