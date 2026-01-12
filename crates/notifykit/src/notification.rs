@@ -3,8 +3,9 @@ use block2::RcBlock;
 use objc2::runtime::Bool;
 use objc2_foundation::{NSError, NSString};
 use objc2_user_notifications::{
-    UNAuthorizationOptions, UNMutableNotificationContent, UNNotificationRequest,
-    UNNotificationSound, UNTimeIntervalNotificationTrigger, UNUserNotificationCenter,
+    UNAuthorizationOptions, UNMutableNotificationContent, UNNotificationInterruptionLevel,
+    UNNotificationRequest, UNNotificationSound, UNTimeIntervalNotificationTrigger,
+    UNUserNotificationCenter,
 };
 use std::sync::mpsc;
 use std::time::Duration;
@@ -29,6 +30,24 @@ pub enum NotificationSound {
     Custom(String),
 }
 
+/// Interruption level for notifications (macOS 12+)
+///
+/// Controls how prominently the notification is displayed to the user.
+#[derive(Default, Clone, Copy, Debug)]
+pub enum InterruptionLevel {
+    /// Notification is added to the notification list without lighting up the screen.
+    Passive,
+    /// Notification lights up the screen and can play a sound (default system behavior).
+    Active,
+    /// Notification appears as an alert that stays on screen until dismissed.
+    /// This is the default for NotifyKit to ensure notifications are not missed.
+    #[default]
+    TimeSensitive,
+    /// Notification breaks through Do Not Disturb and system settings.
+    /// Requires special entitlement from Apple.
+    Critical,
+}
+
 /// Send a macOS notification using the User Notifications framework.
 ///
 /// Note: The binary must be code-signed for notifications to appear.
@@ -38,6 +57,7 @@ pub fn send_notification(
     subtitle: Option<&str>,
     body: Option<&str>,
     sound: NotificationSound,
+    interruption_level: InterruptionLevel,
 ) -> Result<()> {
     let center = UNUserNotificationCenter::currentNotificationCenter();
 
@@ -87,6 +107,16 @@ pub fn send_notification(
             content.setSound(Some(&sound));
         }
     }
+
+    // Set interruption level (macOS 12+)
+    // TimeSensitive causes notifications to appear as alerts that stay on screen
+    let level = match interruption_level {
+        InterruptionLevel::Passive => UNNotificationInterruptionLevel::Passive,
+        InterruptionLevel::Active => UNNotificationInterruptionLevel::Active,
+        InterruptionLevel::TimeSensitive => UNNotificationInterruptionLevel::TimeSensitive,
+        InterruptionLevel::Critical => UNNotificationInterruptionLevel::Critical,
+    };
+    content.setInterruptionLevel(level);
 
     // Create trigger (fire immediately with minimal delay)
     let trigger = UNTimeIntervalNotificationTrigger::triggerWithTimeInterval_repeats(0.1, false);

@@ -1,4 +1,4 @@
-use crate::notification::{NotificationSound, send_notification};
+use crate::notification::{InterruptionLevel, NotificationSound, send_notification};
 use anyhow::Result;
 
 pub fn run() -> Result<()> {
@@ -7,5 +7,6 @@ pub fn run() -> Result<()> {
         None,
         Some("Test notification - NotifyKit is working!"),
         NotificationSound::Default,
+        InterruptionLevel::TimeSensitive,
     )
 }
