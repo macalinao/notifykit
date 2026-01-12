@@ -33,11 +33,18 @@ else
     CARGO_FLAGS="$CARGO_FLAGS --release"
 fi
 
-# Build the bundle
+# Build the bundle (must run from workspace root for resources to be included)
+cd "$PROJECT_DIR"
 cargo bundle $CARGO_FLAGS
 
 APP_NAME="NotifyKit.app"
 SOURCE_APP="$PROJECT_DIR/target/$PROFILE/bundle/osx/$APP_NAME"
+
+# Verify bundle resources before installing
+echo ""
+echo "Verifying bundle resources..."
+"$SCRIPT_DIR/verify-bundle-resources.sh" "$SOURCE_APP"
+
 INSTALL_DIR="$HOME/Applications"
 DEST_APP="$INSTALL_DIR/$APP_NAME"
 BIN_DIR="/usr/local/bin"
