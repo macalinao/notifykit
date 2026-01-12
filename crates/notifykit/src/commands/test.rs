@@ -8,5 +8,6 @@ pub fn run() -> Result<()> {
         Some("Test notification - NotifyKit is working!"),
         NotificationSound::Default,
         InterruptionLevel::TimeSensitive,
+        None,
     )
 }

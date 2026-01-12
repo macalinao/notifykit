@@ -8,7 +8,6 @@ use std::io::{self, Read};
 /// See: https://code.claude.com/docs/en/hooks
 #[derive(Deserialize)]
 struct HookInput {
-    #[allow(dead_code)]
     session_id: String,
     hook_event_name: String,
     #[serde(default)]
@@ -48,6 +47,7 @@ pub fn run(args: CchookArgs) -> Result<()> {
             Some(&input),
             sound,
             interruption_level,
+            None, // No thread grouping in raw mode
         );
     }
 
@@ -75,7 +75,15 @@ pub fn run(args: CchookArgs) -> Result<()> {
         InterruptionLevel::TimeSensitive
     };
 
-    send_notification(&title, None, Some(&body), sound, interruption_level)
+    // Use session_id as thread identifier to group notifications from the same session
+    send_notification(
+        &title,
+        None,
+        Some(&body),
+        sound,
+        interruption_level,
+        Some(&hook.session_id),
+    )
 }
 
 /// Format title based on notification type and event

@@ -59,4 +59,8 @@ pub struct SendArgs {
     /// Use banner style instead of alert (banners auto-dismiss after a few seconds)
     #[arg(long)]
     pub banner: bool,
+
+    /// Group notifications with the same thread identifier together
+    #[arg(long)]
+    pub thread: Option<String>,
 }

@@ -21,5 +21,6 @@ pub fn run(args: SendArgs) -> Result<()> {
         args.body.as_deref(),
         sound,
         interruption_level,
+        args.thread.as_deref(),
     )
 }

@@ -59,6 +59,7 @@ pub fn send_notification(
     body: Option<&str>,
     sound: NotificationSound,
     interruption_level: InterruptionLevel,
+    thread_id: Option<&str>,
 ) -> Result<()> {
     let center = UNUserNotificationCenter::currentNotificationCenter();
 
@@ -94,6 +95,11 @@ pub fn send_notification(
     }
     if let Some(body) = body {
         content.setBody(&NSString::from_str(body));
+    }
+
+    // Set thread identifier for grouping related notifications
+    if let Some(thread_id) = thread_id {
+        content.setThreadIdentifier(&NSString::from_str(thread_id));
     }
 
     // Set sound
