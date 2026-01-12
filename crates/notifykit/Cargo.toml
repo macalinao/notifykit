@@ -26,6 +26,6 @@ anyhow = "1"
 [package.metadata.bundle]
 name = "NotifyKit"
 identifier = "com.ianm.notifykit"
-icon = ["resources/NotifyKit.icns"]
+icon = ["../../resources/NotifyKit.icns"]
 osx_minimum_system_version = "10.15"
-osx_info_plist_exts = ["resources/Info.plist.extra"]
+osx_info_plist_exts = ["../../resources/Info.plist.extra"]
