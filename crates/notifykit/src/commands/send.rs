@@ -1,5 +1,5 @@
 use crate::cli::SendArgs;
-use crate::notification::{NotificationSound, send_notification};
+use crate::notification::{InterruptionLevel, NotificationSound, send_notification};
 use anyhow::Result;
 
 pub fn run(args: SendArgs) -> Result<()> {
@@ -9,10 +9,18 @@ pub fn run(args: SendArgs) -> Result<()> {
         Some(name) => NotificationSound::Custom(name.to_string()),
     };
 
+    let interruption_level = if args.banner {
+        InterruptionLevel::Active
+    } else {
+        InterruptionLevel::TimeSensitive
+    };
+
     send_notification(
         &args.title,
         args.subtitle.as_deref(),
         args.body.as_deref(),
         sound,
+        interruption_level,
+        args.thread.as_deref(),
     )
 }

@@ -72,6 +72,9 @@ jobs:
       - name: Build app bundle
         run: cargo bundle --release --target ${{ matrix.target }} -p notifykit
 
+      - name: Verify bundle resources
+        run: ./scripts/verify-bundle-resources.sh "target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app"
+
       - name: Sign app bundle (ad-hoc)
         run: codesign --sign - --force --deep target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
 

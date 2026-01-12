@@ -1,5 +1,5 @@
 use crate::cli::CchookArgs;
-use crate::notification::{NotificationSound, send_notification};
+use crate::notification::{InterruptionLevel, NotificationSound, send_notification};
 use anyhow::Result;
 use serde::Deserialize;
 use std::io::{self, Read};
@@ -8,7 +8,6 @@ use std::io::{self, Read};
 /// See: https://code.claude.com/docs/en/hooks
 #[derive(Deserialize)]
 struct HookInput {
-    #[allow(dead_code)]
     session_id: String,
     hook_event_name: String,
     #[serde(default)]
@@ -28,6 +27,30 @@ pub fn run(args: CchookArgs) -> Result<()> {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
 
+    // Raw mode: show stdin input directly for debugging
+    if args.raw {
+        let sound = match args.sound.as_deref() {
+            None | Some("default") => NotificationSound::Default,
+            Some("none") => NotificationSound::None,
+            Some(name) => NotificationSound::Custom(name.to_string()),
+        };
+
+        let interruption_level = if args.banner {
+            InterruptionLevel::Active
+        } else {
+            InterruptionLevel::TimeSensitive
+        };
+
+        return send_notification(
+            "Claude Code (Raw)",
+            None,
+            Some(&input),
+            sound,
+            interruption_level,
+            None, // No thread grouping in raw mode
+        );
+    }
+
     let hook: HookInput = serde_json::from_str(&input)?;
 
     // Prevent infinite loops if this is a stop hook
@@ -46,7 +69,21 @@ pub fn run(args: CchookArgs) -> Result<()> {
         Some(name) => NotificationSound::Custom(name.to_string()),
     };
 
-    send_notification(&title, None, Some(&body), sound)
+    let interruption_level = if args.banner {
+        InterruptionLevel::Active
+    } else {
+        InterruptionLevel::TimeSensitive
+    };
+
+    // Use session_id as thread identifier to group notifications from the same session
+    send_notification(
+        &title,
+        None,
+        Some(&body),
+        sound,
+        interruption_level,
+        Some(&hook.session_id),
+    )
 }
 
 /// Format title based on notification type and event
