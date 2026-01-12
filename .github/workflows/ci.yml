@@ -35,3 +35,45 @@ jobs:
 
       - name: Run clippy
         run: cargo clippy -- -D warnings
+
+  bundle:
+    name: Bundle ${{ matrix.target }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Cache cargo-bundle
+        id: cache-cargo-bundle
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-bundle
+          key: cargo-bundle-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install cargo-bundle
+        if: steps.cache-cargo-bundle.outputs.cache-hit != 'true'
+        run: cargo install cargo-bundle
+
+      - name: Build app bundle
+        run: cargo bundle --release --target ${{ matrix.target }} -p notifykit
+
+      - name: Sign app bundle (ad-hoc)
+        run: codesign --sign - --force --deep target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
+
+      - name: Verify code signature
+        run: codesign --verify --verbose target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
