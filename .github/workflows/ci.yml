@@ -73,31 +73,7 @@ jobs:
         run: cargo bundle --release --target ${{ matrix.target }} -p notifykit
 
       - name: Verify bundle resources
-        run: |
-          BUNDLE_PATH="target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app"
-
-          # Check icon exists
-          if [ ! -f "$BUNDLE_PATH/Contents/Resources/NotifyKit.icns" ]; then
-            echo "ERROR: Icon not found in bundle"
-            exit 1
-          fi
-          echo "✓ Icon found: $BUNDLE_PATH/Contents/Resources/NotifyKit.icns"
-
-          # Check Info.plist has icon reference
-          if ! grep -q "CFBundleIconFile" "$BUNDLE_PATH/Contents/Info.plist"; then
-            echo "ERROR: CFBundleIconFile not found in Info.plist"
-            exit 1
-          fi
-          echo "✓ CFBundleIconFile found in Info.plist"
-
-          # Check Info.plist has alert style
-          if ! grep -q "NSUserNotificationAlertStyle" "$BUNDLE_PATH/Contents/Info.plist"; then
-            echo "ERROR: NSUserNotificationAlertStyle not found in Info.plist"
-            exit 1
-          fi
-          echo "✓ NSUserNotificationAlertStyle found in Info.plist"
-
-          echo "Bundle verification passed!"
+        run: ./scripts/verify-bundle-resources.sh "target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app"
 
       - name: Sign app bundle (ad-hoc)
         run: codesign --sign - --force --deep target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
