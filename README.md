@@ -4,7 +4,37 @@ A macOS notification CLI with Claude Code hook support. Built with Rust using th
 
 ## Installation
 
-### Quick Install (Recommended)
+### Using Nix (Recommended)
+
+For faster builds, add the Cachix cache first:
+
+```bash
+cachix use igm
+```
+
+#### Flake
+
+Add to your flake inputs:
+
+```nix
+{
+  inputs.notifykit.url = "github:macalinao/notifykit";
+}
+```
+
+Then add to your packages:
+
+```nix
+environment.systemPackages = [ inputs.notifykit.packages.${system}.default ];
+```
+
+#### Run directly
+
+```bash
+nix run github:macalinao/notifykit
+```
+
+### Quick Install (from releases)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/macalinao/notifykit/master/scripts/install-remote.sh | bash
@@ -13,7 +43,8 @@ curl -fsSL https://raw.githubusercontent.com/macalinao/notifykit/master/scripts/
 ### Manual Install (from releases)
 
 1. Download the latest release from [GitHub Releases](https://github.com/macalinao/notifykit/releases):
-   - `NotifyKit-aarch64-apple-darwin.tar.gz` (Apple Silicon only)
+   - `NotifyKit-aarch64-apple-darwin.tar.gz` (Apple Silicon)
+   - `NotifyKit-x86_64-apple-darwin.tar.gz` (Intel)
 
 2. Extract and install:
 
@@ -36,39 +67,7 @@ notifykit --version
 ```bash
 git clone https://github.com/macalinao/notifykit
 cd notifykit
-./scripts/install.sh --release
-```
-
-### Using Nix
-
-#### Flake (recommended)
-
-Add to your flake inputs:
-
-```nix
-{
-  inputs.notifykit.url = "github:macalinao/notifykit";
-}
-```
-
-Then add to your packages:
-
-```nix
-environment.systemPackages = [ inputs.notifykit.packages.${system}.default ];
-```
-
-#### Run directly
-
-```bash
-nix run github:macalinao/notifykit
-```
-
-#### Install locally with Nix
-
-```bash
-git clone https://github.com/macalinao/notifykit
-cd notifykit
-./scripts/install-nix.sh
+./scripts/install --release
 ```
 
 ### First Run
@@ -226,8 +225,7 @@ notifykit/
 │   ├── Info.plist          # macOS app bundle metadata
 │   └── NotifyKit.icns      # App icon
 ├── scripts/
-│   ├── install.sh          # Local install (uses cargo-bundle)
-│   ├── install-nix.sh      # Local install using Nix
+│   ├── install             # Local install (uses cargo-bundle)
 │   └── install-remote.sh   # Remote install script
 ├── flake.nix               # Nix flake
 ├── package.nix             # Nix derivation (nixpkgs-compatible)
