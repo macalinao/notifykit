@@ -16,6 +16,7 @@ curl -fsSL https://raw.githubusercontent.com/macalinao/notifykit/master/scripts/
    - `NotifyKit-aarch64-apple-darwin.tar.gz` (Apple Silicon only)
 
 2. Extract and install:
+
 ```bash
 # Extract
 tar -xzf NotifyKit-*.tar.gz
@@ -36,6 +37,38 @@ notifykit --version
 git clone https://github.com/macalinao/notifykit
 cd notifykit
 ./scripts/install.sh --release
+```
+
+### Using Nix
+
+#### Flake (recommended)
+
+Add to your flake inputs:
+
+```nix
+{
+  inputs.notifykit.url = "github:macalinao/notifykit";
+}
+```
+
+Then add to your packages:
+
+```nix
+environment.systemPackages = [ inputs.notifykit.packages.${system}.default ];
+```
+
+#### Run directly
+
+```bash
+nix run github:macalinao/notifykit
+```
+
+#### Install locally with Nix
+
+```bash
+git clone https://github.com/macalinao/notifykit
+cd notifykit
+./scripts/install-nix.sh
 ```
 
 ### First Run
@@ -119,6 +152,7 @@ notifykit sounds
 ```
 
 Available options:
+
 - `default` - System default notification sound
 - `none` - No sound
 - System sounds: `Basso`, `Blow`, `Bottle`, `Frog`, `Funk`, `Glass`, `Hero`, `Morse`, `Ping`, `Pop`, `Purr`, `Sosumi`, `Submarine`, `Tink`
@@ -192,8 +226,11 @@ notifykit/
 │   ├── Info.plist          # macOS app bundle metadata
 │   └── NotifyKit.icns      # App icon
 ├── scripts/
-│   ├── install             # Local install (uses cargo-bundle)
+│   ├── install.sh          # Local install (uses cargo-bundle)
+│   ├── install-nix.sh      # Local install using Nix
 │   └── install-remote.sh   # Remote install script
+├── flake.nix               # Nix flake
+├── package.nix             # Nix derivation (nixpkgs-compatible)
 ├── devenv.nix              # Nix development environment
 └── Cargo.toml              # Workspace configuration
 ```
