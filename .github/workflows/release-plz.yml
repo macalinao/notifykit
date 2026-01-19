@@ -59,13 +59,15 @@ jobs:
     name: Build ${{ matrix.target }}
     needs: release-plz-release
     if: needs.release-plz-release.outputs.releases_created == 'true'
-    runs-on: macos-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - aarch64-apple-darwin
-          - x86_64-apple-darwin
+        include:
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
     steps:
       - name: Get version from releases
         id: version
@@ -82,38 +84,23 @@ jobs:
         with:
           ref: v${{ steps.version.outputs.version }}
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
         with:
-          targets: ${{ matrix.target }}
+          name: igm
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.target }}
-
-      - name: Cache cargo-bundle
-        id: cache-cargo-bundle
-        uses: actions/cache@v5
-        with:
-          path: ~/.cargo/bin/cargo-bundle
-          key: cargo-bundle-${{ runner.os }}-${{ runner.arch }}
-
-      - name: Install cargo-bundle
-        if: steps.cache-cargo-bundle.outputs.cache-hit != 'true'
-        run: cargo install cargo-bundle
-
-      - name: Build app bundle
-        run: cargo bundle --release --target ${{ matrix.target }} -p notifykit
-
-      - name: Sign app bundle (ad-hoc)
-        run: codesign --sign - --force --deep target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
+      - name: Build with Nix
+        run: nix build --print-build-logs
 
       - name: Verify code signature
-        run: codesign --verify --verbose target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
+        run: codesign --verify --verbose result/Applications/NotifyKit.app
 
       - name: Create archive
-        run: tar -czvf NotifyKit-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release/bundle/osx NotifyKit.app
+        run: tar -czvf NotifyKit-${{ matrix.target }}.tar.gz -C result/Applications NotifyKit.app
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2

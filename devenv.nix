@@ -4,6 +4,11 @@
 }:
 
 {
+  cachix = {
+    push = "igm";
+    pull = [ "igm" ];
+  };
+
   packages = with pkgs; [
     git
     nixfmt-rfc-style
