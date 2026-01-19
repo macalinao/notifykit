@@ -80,3 +80,47 @@ jobs:
 
       - name: Verify code signature
         run: codesign --verify --verbose target/${{ matrix.target }}/release/bundle/osx/NotifyKit.app
+
+  nix-build:
+    name: Nix Build ${{ matrix.system }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: aarch64-darwin
+            runner: macos-latest
+          - system: x86_64-darwin
+            runner: macos-15-intel
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
+        with:
+          name: igm
+          # Push to cache on master builds
+          authToken: ${{ github.ref == 'refs/heads/master' && secrets.CACHIX_AUTH_TOKEN || '' }}
+
+      - name: Build with Nix
+        run: nix build --print-build-logs
+
+      - name: Verify app bundle
+        run: |
+          test -d result/Applications/NotifyKit.app
+          test -f result/Applications/NotifyKit.app/Contents/MacOS/notifykit
+          test -f result/Applications/NotifyKit.app/Contents/Resources/NotifyKit.icns
+          test -f result/Applications/NotifyKit.app/Contents/Info.plist
+          grep -q NSUserNotificationAlertStyle result/Applications/NotifyKit.app/Contents/Info.plist
+
+      - name: Verify code signature
+        run: codesign --verify --verbose result/Applications/NotifyKit.app
+
+      - name: Test CLI from result
+        run: result/bin/notifykit --help
+
+      - name: Test nix run
+        run: nix run . -- --version
