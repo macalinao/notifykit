@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/macalinao/notifykit/compare/v0.1.1...v0.1.2) - 2026-01-19
+
+### Added
+
+- add thread grouping for notifications
+- add alert-style notifications with --banner flag
+
+### Fixed
+
+- move resources back to workspace root
+- use workspace-relative paths for bundle resources
+- move resources into crate directory for cargo-bundle
+- correct resource paths for app bundle icon
+- allow dead_code for unused InterruptionLevel variants
+
 ## [0.1.1](https://github.com/macalinao/notifykit/compare/v0.1.0...v0.1.1) - 2026-01-11
 
 ### Fixed
