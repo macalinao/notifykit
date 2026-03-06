@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 RESOURCES_DIR="$PROJECT_ROOT/resources"
 
-SVG_FILE="$RESOURCES_DIR/icon.svg"
+SVG_FILE="$PROJECT_ROOT/brand/icon.svg"
 ICONSET_DIR="$RESOURCES_DIR/NotifyKit.iconset"
 ICNS_FILE="$RESOURCES_DIR/NotifyKit.icns"
 
