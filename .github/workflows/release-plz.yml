@@ -88,7 +88,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
 
       - name: Setup Cachix
-        uses: cachix/cachix-action@v16
+        uses: cachix/cachix-action@v17
         with:
           name: igm
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
