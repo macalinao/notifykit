@@ -13,11 +13,11 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
 
-      - uses: cachix/cachix-action@v16
+      - uses: cachix/cachix-action@v17
         with:
           name: devenv
 
-      - uses: cachix/cachix-action@v16
+      - uses: cachix/cachix-action@v17
         with:
           name: igm
           # Push to cache on master builds
