@@ -103,7 +103,7 @@ jobs:
         run: tar -czvf NotifyKit-${{ matrix.target }}.tar.gz -C result/Applications NotifyKit.app
 
       - name: Upload to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version }}
           files: NotifyKit-${{ matrix.target }}.tar.gz
